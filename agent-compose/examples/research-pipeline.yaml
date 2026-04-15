@@ -1,0 +1,65 @@
+# Research Pipeline Example
+# Mixed frameworks: LangGraph researcher → Direct fact-checker → CrewAI analyst → LangGraph writer
+#
+# Usage:
+#   agent-compose up -f examples/research-pipeline.yaml --input "AI agent frameworks in 2026"
+
+name: research-pipeline
+description: "Multi-framework research pipeline with fact-checking"
+
+settings:
+  default_model: gpt-4o-mini
+  parallel: true
+  output_dir: ./outputs
+
+agents:
+  researcher:
+    framework: langgraph
+    model: gpt-4o
+    system_prompt: >
+      You are an expert researcher. Given a topic, produce a thorough
+      research brief covering key facts, recent developments, market data,
+      and notable players. Include specific numbers and dates where possible.
+    max_tokens: 4000
+    connects_to: [fact_checker, analyst]
+
+  fact_checker:
+    framework: direct
+    model: claude-sonnet-4-20250514
+    prompt: >
+      Verify the following research brief. Flag any claims that appear
+      inaccurate, outdated, or unsupported. For each flagged claim,
+      explain why it may be wrong and suggest a correction.
+
+      Research to verify:
+      {{researcher.output}}
+    max_tokens: 2000
+    connects_to: [writer]
+
+  analyst:
+    framework: crewai
+    role: "Senior Technology Analyst"
+    goal: "Identify the top 3 trends and create a comparison framework"
+    backstory: >
+      You have 15 years of experience analyzing technology markets.
+      You specialize in identifying patterns that others miss and
+      creating frameworks that help executives make decisions.
+    model: gpt-4o
+    max_tokens: 3000
+    connects_to: [writer]
+
+  writer:
+    framework: direct
+    model: gpt-4o-mini
+    prompt: >
+      Write a professional executive summary (600-800 words) using the
+      verified research and analysis below. Use only fact-checked claims.
+      Include the analyst's trend framework as a structured section.
+
+      Fact-checked research:
+      {{fact_checker.output}}
+
+      Analysis and trends:
+      {{analyst.output}}
+    max_tokens: 3000
+    output: report.md

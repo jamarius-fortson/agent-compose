@@ -1,0 +1,50 @@
+# Adversarial Debate Pattern
+# Two advocates argue opposing positions using different models for genuine diversity.
+# A judge evaluates the arguments impartially.
+#
+# Usage:
+#   agent-compose up -f examples/debate.yaml --input "Should companies adopt MCP or traditional APIs?"
+
+name: ai-debate
+description: "Adversarial debate with judge — reduces hallucination through opposition"
+
+agents:
+  advocate_for:
+    model: gpt-4o
+    system_prompt: >
+      You are a debate advocate. Argue passionately IN FAVOR of the
+      given position. Provide specific evidence, data, and logical
+      reasoning. Be thorough but concise (400 words max).
+    temperature: 0.3
+    connects_to: [judge]
+
+  advocate_against:
+    model: claude-sonnet-4-20250514
+    system_prompt: >
+      You are a debate advocate. Argue passionately AGAINST the
+      given position. Provide specific evidence, data, and logical
+      reasoning. Be thorough but concise (400 words max).
+    temperature: 0.3
+    connects_to: [judge]
+
+  judge:
+    model: gpt-4o
+    temperature: 0
+    prompt: >
+      You are an impartial judge. Evaluate these arguments purely on
+      evidence quality and logical coherence — not which position you
+      personally agree with.
+
+      Rate each advocate on:
+      1. Evidence quality (specific data vs vague claims)
+      2. Logical coherence
+      3. Addressing the strongest counter-argument
+
+      ARGUMENT FOR:
+      {{advocate_for.output}}
+
+      ARGUMENT AGAINST:
+      {{advocate_against.output}}
+
+      Deliver a reasoned verdict with confidence level (high/medium/low).
+    output: verdict.md

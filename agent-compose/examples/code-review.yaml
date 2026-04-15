@@ -1,0 +1,32 @@
+# Code Review Pipeline — parallel reviewers + synthesizer
+# Usage:
+#   agent-compose up -f examples/code-review.yaml --input-file my_code.py
+
+name: code-review
+description: "Parallel security, performance, and style reviews"
+
+agents:
+  security:
+    model: gpt-4o
+    system_prompt: "You are a security expert. Find vulnerabilities, injection risks, and auth issues."
+    connects_to: [synthesizer]
+
+  performance:
+    model: gpt-4o
+    system_prompt: "You are a performance engineer. Find bottlenecks, memory leaks, and inefficiencies."
+    connects_to: [synthesizer]
+
+  style:
+    model: gpt-4o-mini
+    system_prompt: "Review code style, readability, naming conventions, and documentation quality."
+    connects_to: [synthesizer]
+
+  synthesizer:
+    model: claude-sonnet-4-20250514
+    prompt: >
+      Combine these reviews into one prioritized report.
+      
+      Security: {{security.output}}
+      Performance: {{performance.output}}
+      Style: {{style.output}}
+    output: review.md
