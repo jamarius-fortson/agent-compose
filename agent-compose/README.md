@@ -134,7 +134,7 @@ We welcome senior-level contributions to the core engine. Check [CONTRIBUTING.md
 
 <div align="center">
 
-**[agent-compose](https://github.com/Ismail-2001/agent-compose)** by **Ismail Sajid**
+**[agent-compose](https://github.com/jamarius-fortson/agent-compose)** by **Jamarius Fortson**
 
 *Write YAML. Ship Agents.*
 
